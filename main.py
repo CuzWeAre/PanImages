@@ -1,4 +1,3 @@
-import tkinter
 from PIL import Image, ImageDraw
 import os
 import numpy
@@ -10,10 +9,12 @@ class MainProcess:
 
     def __init__(self):
         """初始化应用设置"""
-        self.proportion = 16 / 9
+        self.proportion = 1080 / 2060
         self.gap = 200
         self.duration = 5
         self.ending_time = 10
+        self.codec = "libx264"
+        self.fps = 60
 
     def stitch(self):
         """用于拼接图片的函数"""
@@ -29,19 +30,22 @@ class MainProcess:
         images = [Image.open(work_dir + image) for
                   image in image_files]
 
-        self.width = sum([image.size[0] for image in images])
+        self.width = sum([image.size[0] for image in images]) + (len(image_files) - 1) * self.gap
         self.height = max([image.size[1] for image in images])
-        self.canvas: Image.Image = Image.new("RGB", (self.width + (len(image_files) - 1) * self.gap, self.height),
+        self.canvas: Image.Image = Image.new("RGB", (self.width, self.height),
                                              color=(255, 255, 255))
 
         x_axis = 0
         for image in images:
             self.canvas.paste(image, (x_axis, 0))
             x_axis += image.size[0] + 200
-        # self.canvas.show()
+
+        output_img = "stitched_img.jpg"
+        self.canvas.save(output_img)
 
     def tovideo(self):
         """转换为视频"""
+        # self.canvas.crop((0,0,self.width,self.height)).show()
 
         pixel_speed = int((self.width - self.height * self.proportion) / self.duration)  # 每秒前进的像素数
 
@@ -52,18 +56,18 @@ class MainProcess:
             return numpy.array(self.canvas.crop(box))
 
         video_clip0 = VideoClip(make_frame, duration=self.duration)
-        # self.canvas.crop((self.width-self.height*self.proportion,0,self.width,self.height)).show()
         video_clip1 = ImageClip(
             numpy.array(self.canvas.crop((self.width - self.height * self.proportion, 0, self.width, self.height))),
             duration=self.ending_time)
         video = concatenate_videoclips([video_clip0, video_clip1])
-        output_file = "custom_video.mp4"
-        video.write_videofile(output_file, codec='libx264', fps=60)
+        output_file = "video.mp4"
+        video.write_videofile(output_file, codec=self.codec, fps=self.fps)
 
 
 if __name__ == "__main__":
     a = MainProcess()
 
+    import tkinter
     from tkinter import ttk
 
     root = tkinter.Tk()
