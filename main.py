@@ -1,7 +1,7 @@
 from PIL import Image, ImageDraw
 import os
 import numpy
-from moviepy.editor import VideoFileClip, ImageSequenceClip, VideoClip, concatenate_videoclips, ImageClip
+from moviepy.editor import VideoFileClip, ImageSequenceClip, VideoClip, concatenate_videoclips, ImageClip,TextClip
 
 
 class MainProcess:
@@ -62,6 +62,13 @@ class MainProcess:
         video = concatenate_videoclips([video_clip0, video_clip1])
         output_file = "video.mp4"
         video.write_videofile(output_file, codec=self.codec, fps=self.fps)
+
+    def add_text(self):
+        """为视频底部添加文字"""
+        text = Image.new("RGB",(self.width,self.height))
+        text2 = TextClip("Hello TextClip")
+
+
 
 
 if __name__ == "__main__":
